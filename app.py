@@ -89,7 +89,41 @@ def dashboard():
 
     else:
         return redirect('/')
+    
+@app.route('/reservations')
+def reservations():
+    cursor = mydb.cursor()
+    if 'username' in session:
+        page = request.args.get('page', 1, type=int)
+        per_page = 10
+        offset = (page - 1) * per_page
 
+        cursor.execute("SELECT * FROM RESERVATION LIMIT %s OFFSET %s", (per_page, offset))
+        reservations = cursor.fetchall()
+
+        # Check if there are more results
+        cursor.execute("SELECT COUNT(*) FROM RESERVATION")
+        total_records = cursor.fetchone()[0]
+        has_next = (offset + per_page) < total_records
+        has_prev = page > 1
+
+        return render_template('reservations.html', reservations=reservations, page=page, per_page=per_page, has_next=has_next, has_prev=has_prev)
+        
+
+    else:
+        return redirect('/')
+
+@app.route('/reservation/<int:reservation_id>')
+def reservation(reservation_id):
+    # Fetching individual record details
+    cursor = mydb.cursor()
+    cursor.execute("SELECT * FROM RESERVATION WHERE RESERVATION_ID = %s", (reservation_id,))
+    reservation_details = cursor.fetchone()
+    if reservation_details:
+        return render_template('reservationdetails.html', reservation=reservation_details)
+    else:
+        return "Vehicle not found"
+    
 @app.route('/vehicle/<int:vehicle_id>')
 def vehicle(vehicle_id):
     # Fetching individual record details
