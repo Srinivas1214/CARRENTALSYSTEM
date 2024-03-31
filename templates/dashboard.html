@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+</head>
+<body>
+    <h2>Dashboard</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Vehicle ID</th>
+                <th>Make</th>
+                <th>Model</th>
+                <!-- Add more headers as per your vehicle details -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for vehicle in vehicles %}
+                <tr>
+                    <td>{{ vehicle[0] }}</td>
+                    <td>{{ vehicle[1] }}</td>
+                    <td>{{ vehicle[2] }}</td>
+                    <!-- Add more columns as per your vehicle details -->
+                    <td><a href="/vehicle/{{ vehicle[0] }}">View Details</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if page > 1 %}
+        <a href="?page={{ page - 1 }}"><button>Previous</button></a>
+    {% endif %}
+    {% if vehicles|length == per_page %}
+        <a href="?page={{ page + 1 }}"><button>Next</button></a>
+{% endif %}
+</body>
+</html>
