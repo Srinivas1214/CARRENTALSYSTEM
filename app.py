@@ -1,5 +1,8 @@
 from flask import Flask, render_template, request, redirect, session
 import mysql.connector
+from datetime import datetime
+import logging
+
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key"
@@ -22,14 +25,15 @@ def login():
     password = request.form['password']
 
     cursor = mydb.cursor()
-    cursor.execute("SELECT * FROM LOGIN_INFO WHERE USER_ID=%s AND PASSWORD=%s", (username, password))
+    cursor.execute("SELECT USERNAME FROM LOGIN_INFO WHERE USERNAME=%s AND PASSWORD=%s", (username, password))
     user = cursor.fetchone()
 
     if user:
-        session['username'] = user[1]
+        session['username'] = user[0]
         return redirect('/dashboard')
     else:
-        return "Login Failed. Invalid username or password."
+        error_message = "Login Failed. Invalid username or password."
+        return render_template('index.html', error_message=error_message)
     
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -54,18 +58,30 @@ def signup():
 
         username = firstname + lastname
         password = request.form['password']
-
-        cursor = mydb.cursor()
         try:
-           
             cursor = mydb.cursor()
-            cursor.execute("INSERT INTO CUSTOMER (FIRST_NAME, LAST_NAME, DOB, GENDER, PHONE_NUMBER, EMAIL_ID, LICENCE_NO, LICENCE_EXPIRY_DATE, ADDRESS_LINE_1, ADDRESE_LINE_2, CITY, STATE, ZIP_CODE) VALUES ( %s,%s, %s,%s, %s,%s, %s,%s, %s,%s, %s, %s, %s)",
-                           (firstname, lastname, dob, gender, phonenumber, email, licNumber, licExpDate, address1, address2, city, state, zipcode))
+            cursor.execute("insert into LOGIN_INFO (USERNAME, PASSWORD) values (%s, %s);",(username, password))
+            mydb.commit()
+
+            cursor = mydb.cursor()
+            cursor.execute("SELECT * FROM LOGIN_INFO WHERE USERNAME="+ "'"+ username + "'")
+            cus_id = cursor.fetchone()
+           
+            cursor.execute("INSERT INTO CUSTOMER (CUSTOMER_ID, FIRST_NAME, LAST_NAME, DOB, GENDER, PHONE_NUMBER, EMAIL_ID, LICENCE_NO, LICENCE_EXPIRY_DATE, ADDRESS_LINE_1, ADDRESE_LINE_2, CITY, STATE, ZIP_CODE) VALUES ( %s,%s, %s,%s, %s,%s, %s,%s, %s,%s, %s, %s, %s, %s)",
+                           (cus_id[0], firstname, lastname, dob, gender, phonenumber, email, licNumber, licExpDate, address1, address2, city, state, zipcode))
 
             mydb.commit()
             return redirect('/')
-        except mysql.connector.IntegrityError:
+        except Exception as Argument:
+            logging.exception("Error occurred while printing GeeksforGeeks") 
             return "Username already exists."
+
+def gatDate(date_string):
+    current_format = "%m-%d-%Y"
+    date_object = datetime.strptime(date_string, current_format)
+    desired_format = "%Y-%m-%d"
+    return date_object.strftime(desired_format)
+
 
 @app.route('/dashboard')
 def dashboard():
