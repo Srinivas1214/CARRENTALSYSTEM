@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Make Reservation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <style>
+        .header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: #f8f9fa; /* Change this color as needed */
+            border-bottom: 1px solid #dee2e6; /* Change this color as needed */
+        }
+    
+        .logo {
+            max-width: 150px; /* Adjust the logo width as needed */
+        }
+    </style> 
+</head>
+<body>
+    <div class="header-bar">
+        <div class="logo">
+            <img src="path/to/your/logo.png" alt="Logo">
+        </div>
+        <div>
+            <a href="/logout" class="btn btn-danger">Sign Out</a>
+        </div>
+    </div>
+
+<div class="container mx-auto text-center">
+    <div class="w-50 mx-auto mt-5 bg-light px-3 py-2 rounded-3">
+        <h2 class="fs-4 fw-bold mb-4">Make Reservation</h2>
+        <form id="reservationForm" action="/make_reservation/{{ vehicle[0] }}" method="post">
+
+            <div class="mb-3 row">
+                <label for="drop_location" class="col-sm-3 col-form-label">Make</label>
+                <div class="col-sm-9">
+                    {{ vehicle[1] }}
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="drop_location" class="col-sm-3 col-form-label">Model</label>
+                <div class="col-sm-9">
+                    {{ vehicle[2] }}
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="drop_location" class="col-sm-3 col-form-label">Year</label>
+                <div class="col-sm-9">
+                    {{ vehicle[3] }}
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="drop_location" class="col-sm-3 col-form-label">Type</label>
+                <div class="col-sm-9">
+                    {{ vehicle[4] }}
+                </div>
+            </div>
+
+            <div class="mb-3 row">
+                <label for="type" class="col-sm-3 col-form-label">Pickup Location</label>
+                <div class="col-sm-9">
+                    {% if vehicle[13] == 1 %}
+                        Mount Plesant
+                    {% elif vehicle[13] == 2 %}
+                        Mid Land
+                    {% elif vehicle[13] == 3 %}
+                        Lansing
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mb-3 row">
+                <label for="pickup_date" class="col-sm-3 col-form-label">Pickup Date:</label>
+                <div class="col-sm-9">
+                    <input type="date" class="form-control" id="pickup_date" name="pickup_date" required>
+                </div>
+            </div>
+
+            <div class="mb-3 row">
+                <label for="drop_date" class="col-sm-3 col-form-label">Drop Date:</label>
+                <div class="col-sm-9">
+                    <input type="date" class="form-control" id="drop_date" name="drop_date" required>
+                </div>
+            </div>
+
+            <div class="mb-3 row">
+                <label for="drop_location" class="col-sm-3 col-form-label">Drop Location:</label>
+                <div class="col-sm-9">
+                    <select class="form-select" id="drop_location_select" name="drop_location" required>
+                        <option value="">Select Drop Location</option>
+                        <option value="1">Mount Pleasant</option>
+                        <option value="2">Midland</option>
+                        <option value="3">Lansing</option>
+                        <!-- Add more options as needed -->
+                    </select>
+                    <input type="hidden" id="drop_location" name="drop_location_hidden">
+                </div>
+            </div>
+
+            <div class="mb-3 row">
+                <label for="comments" class="col-sm-3 col-form-label">Comments:</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="comments" name="comments">
+                </div>
+            </div>
+
+            <div class="mb-3 row">
+                <label for="price" class="col-sm-3 col-form-label">Price:</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="price" name="price" readonly>
+                </div>
+            </div>
+
+            <div class="mb-3 row">
+                <label for="payment_method" class="col-sm-3 col-form-label">Payment Method:</label>
+                <div class="col-sm-9">
+                    <select class="form-select" id="payment_method" name="payment_method" required>
+                        <option value="">Select Payment Method</option>
+                        <option value="CASH">CASH</option>
+                        <option value="CARD">CARD</option>
+                        <option value="CHECK">CHECK</option>
+                        <!-- Add more payment methods as needed -->
+                    </select>
+                </div>
+            </div>
+
+            <!-- Add more fields as needed -->
+            <div class="mt-3">
+                <a href="/vehicle/{{ vehicle[0] }}" class="btn btn-primary me-2">Back</a>
+                <button type="submit" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#confirmationModal">Confirm Reservation</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+
+<script>
+    document.getElementById("reservationForm").addEventListener("change", function(event) {
+        var pickupDate = new Date(document.getElementById("pickup_date").value);
+        var dropDate = new Date(document.getElementById("drop_date").value);
+        var today = new Date();
+
+        // Validate pickup date not later than today
+        if (pickupDate < today) {
+            alert("Pickup date should not be earlier than today's date.");
+            event.preventDefault();
+            return;
+        }
+
+        // Validate drop date greater than pickup date
+        if (dropDate <= pickupDate) {
+            alert("Drop date should be greater than pickup date.");
+            event.preventDefault();
+            return;
+        }
+
+        // Calculate price based on number of days between pickup and drop dates
+        var daysDiff = Math.ceil((dropDate - pickupDate) / (1000 * 60 * 60 * 24));
+        var pricePerDay = parseFloat("{{ vehicle[12] }}");
+        var totalPrice = daysDiff * pricePerDay;
+
+        // Update the price field
+        document.getElementById("price").value = totalPrice.toFixed(2);
+    });
+</script>
+
+</body>
+</html>

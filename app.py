@@ -34,6 +34,13 @@ def login():
     else:
         error_message = "Login Failed. Invalid username or password."
         return render_template('index.html', error_message=error_message)
+
+@app.route('/logout')
+def logout():
+    # Clear the session data
+    session.pop('username', None)
+    # Redirect to the login page
+    return redirect('/')
     
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -76,33 +83,41 @@ def signup():
             logging.exception("Error occurred while printing GeeksforGeeks") 
             return "Username already exists."
 
-def gatDate(date_string):
-    current_format = "%m-%d-%Y"
-    date_object = datetime.strptime(date_string, current_format)
-    desired_format = "%Y-%m-%d"
-    return date_object.strftime(desired_format)
-
 
 @app.route('/dashboard')
 def dashboard():
+    if 'username' not in session:
+        return redirect('/')
+    
     cursor = mydb.cursor()
     if 'username' in session:
         page = request.args.get('page', 1, type=int)
+        location = request.args.get('location')
         per_page = 10
         offset = (page - 1) * per_page
 
-        cursor.execute("SELECT * FROM VEHICLE LIMIT %s OFFSET %s", (per_page, offset))
-        vehicles = cursor.fetchall()
+        if location:
+            location = int(location)
 
-        # Check if there are more results
-        cursor.execute("SELECT COUNT(*) FROM VEHICLE")
-        total_records = cursor.fetchone()[0]
-        has_next = (offset + per_page) < total_records
-        has_prev = page > 1
+            cursor.execute("SELECT * FROM VEHICLE WHERE ADDRESS_LOCATED= %s LIMIT %s OFFSET %s", (location ,per_page, offset))
+            vehicles = cursor.fetchall()
+
+            # Check if there are more results
+            cursor.execute("SELECT COUNT(*) FROM VEHICLE WHERE ADDRESS_LOCATED=%s", (location,))
+            total_records = cursor.fetchone()[0]
+            has_next = (offset + per_page) < total_records
+            has_prev = page > 1
+        else:
+            cursor.execute("SELECT * FROM VEHICLE LIMIT %s OFFSET %s", (per_page, offset))
+            vehicles = cursor.fetchall()
+
+            # Check if there are more results
+            cursor.execute("SELECT COUNT(*) FROM VEHICLE")
+            total_records = cursor.fetchone()[0]
+            has_next = (offset + per_page) < total_records
+            has_prev = page > 1
 
         return render_template('dashboard.html', vehicles=vehicles, page=page, per_page=per_page, has_next=has_next, has_prev=has_prev)
-        
-
     else:
         return redirect('/')
     
@@ -148,6 +163,49 @@ def vehicle(vehicle_id):
     vehicle_details = cursor.fetchone()
     if vehicle_details:
         return render_template('vehicle.html', vehicle=vehicle_details)
+    else:
+        return "Vehicle not found"
+    
+@app.route('/register')
+def register():
+    return render_template('register.html')
+    
+@app.route('/make_reservation/<int:vehicle_id>', methods=['GET', 'POST'])
+def make_reservation(vehicle_id):
+    if 'username' not in session:
+        return redirect('/')
+
+    if request.method == 'POST':
+        pickup_date = request.form['pickup_date']
+        drop_date = request.form['drop_date']
+        drop_location = request.form['drop_location']
+        comments = request.form['comments']
+        price = request.form['price']
+        payment_method = request.form['payment_method']
+        # Add more form fields as needed above
+
+        cursor = mydb.cursor()
+
+        # Get Veichle info
+        cursor.execute("SELECT * FROM VEHICLE WHERE VEHICLE_ID = %s", (vehicle_id,))
+        vehicle_details = cursor.fetchone()
+
+        # Get customer id
+        cursor.execute("select USER_ID from LOGIN_INFO where USERNAME = %s;",(session['username'],))
+        customer_id = cursor.fetchone()[0]
+
+        # Insert the reservation details into the database
+        cursor.execute("insert into RESERVATION (CUSTOMER_ID, PICKUP_DATE, PICKUP_LOCATION, DROP_DATE, DROP_LOCATION, R_STATUS, VEHICLE_ID, TRIP_TYPE, COMMENTS, PAYMENT_AMOUNT,PAYMENT_METHOD) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                       (customer_id, pickup_date, vehicle_details[13], drop_date ,drop_location, 'RESERVED',  vehicle_id, 'SHORT_TERM', comments, price, payment_method))
+        mydb.commit()
+        return render_template('reservation_sucessful.html')
+
+    # Fetch vehicle details to display on reservation page
+    cursor = mydb.cursor()
+    cursor.execute("SELECT * FROM VEHICLE WHERE VEHICLE_ID = %s", (vehicle_id,))
+    vehicle_details = cursor.fetchone()
+    if vehicle_details:
+        return render_template('make_reservation.html', vehicle=vehicle_details)
     else:
         return "Vehicle not found"
 
