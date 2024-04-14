@@ -99,20 +99,20 @@ def dashboard():
         if location:
             location = int(location)
 
-            cursor.execute("SELECT * FROM VEHICLE WHERE ADDRESS_LOCATED= %s LIMIT %s OFFSET %s", (location ,per_page, offset))
+            cursor.execute("SELECT * FROM VEHICLE WHERE ADDRESS_LOCATED= %s and STATUS='ACTIVE' LIMIT %s OFFSET %s", (location ,per_page, offset))
             vehicles = cursor.fetchall()
 
             # Check if there are more results
-            cursor.execute("SELECT COUNT(*) FROM VEHICLE WHERE ADDRESS_LOCATED=%s", (location,))
+            cursor.execute("SELECT COUNT(*) FROM VEHICLE WHERE ADDRESS_LOCATED=%s and STATUS='ACTIVE'", (location,))
             total_records = cursor.fetchone()[0]
             has_next = (offset + per_page) < total_records
             has_prev = page > 1
         else:
-            cursor.execute("SELECT * FROM VEHICLE LIMIT %s OFFSET %s", (per_page, offset))
+            cursor.execute("SELECT * FROM VEHICLE where STATUS='ACTIVE' LIMIT %s OFFSET %s", (per_page, offset))
             vehicles = cursor.fetchall()
 
             # Check if there are more results
-            cursor.execute("SELECT COUNT(*) FROM VEHICLE")
+            cursor.execute("SELECT COUNT(*) FROM VEHICLE where STATUS='ACTIVE'")
             total_records = cursor.fetchone()[0]
             has_next = (offset + per_page) < total_records
             has_prev = page > 1
@@ -129,7 +129,12 @@ def reservations():
         per_page = 10
         offset = (page - 1) * per_page
 
-        cursor.execute("SELECT * FROM RESERVATION LIMIT %s OFFSET %s", (per_page, offset))
+        cursor = mydb.cursor()
+        # Get customer id
+        cursor.execute("select USER_ID from LOGIN_INFO where USERNAME = %s;",(session['username'],))
+        customer_id = cursor.fetchone()[0]
+
+        cursor.execute("SELECT * FROM RESERVATION where CUSTOMER_ID= %s LIMIT %s OFFSET %s", (customer_id ,per_page, offset))
         reservations = cursor.fetchall()
 
         # Check if there are more results
@@ -148,7 +153,7 @@ def reservations():
 def reservation(reservation_id):
     # Fetching individual record details
     cursor = mydb.cursor()
-    cursor.execute("SELECT * FROM RESERVATION WHERE RESERVATION_ID = %s", (reservation_id,))
+    cursor.execute("select R.RESERVATION_ID, CONCAT(C.FIRST_NAME,' ',C.LAST_NAME) AS Name, V.MAKE, V.MODEL, V.YEAR ,R.R_STATUS ,R.PICKUP_LOCATION, R.PICKUP_DATE, R.DROP_LOCATION, R.DROP_DATE, R.PAYMENT_AMOUNT, R.PAYMENT_METHOD from RESERVATION AS R JOIN CUSTOMER C on C.CUSTOMER_ID = R.CUSTOMER_ID JOIN VEHICLE V on R.VEHICLE_ID = V.VEHICLE_ID WHERE R.RESERVATION_ID = %s;", (reservation_id,))
     reservation_details = cursor.fetchone()
     if reservation_details:
         return render_template('reservationdetails.html', reservation=reservation_details)
@@ -197,6 +202,9 @@ def make_reservation(vehicle_id):
         # Insert the reservation details into the database
         cursor.execute("insert into RESERVATION (CUSTOMER_ID, PICKUP_DATE, PICKUP_LOCATION, DROP_DATE, DROP_LOCATION, R_STATUS, VEHICLE_ID, TRIP_TYPE, COMMENTS, PAYMENT_AMOUNT,PAYMENT_METHOD) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
                        (customer_id, pickup_date, vehicle_details[13], drop_date ,drop_location, 'RESERVED',  vehicle_id, 'SHORT_TERM', comments, price, payment_method))
+        
+        cursor.execute("update VEHICLE set STATUS='IN-RESERVATION' WHERE VEHICLE_ID = %s;",(vehicle_id,))
+
         mydb.commit()
         return render_template('reservation_sucessful.html')
 
@@ -208,6 +216,22 @@ def make_reservation(vehicle_id):
         return render_template('make_reservation.html', vehicle=vehicle_details)
     else:
         return "Vehicle not found"
+    
+
+
+@app.route('/cancel_reservation/<int:reservation_id>', methods=['POST'])
+def cancel_reservation(reservation_id):
+    cursor = mydb.cursor()
+    cursor.execute("update RESERVATION set R_STATUS = 'CANCELLED' where RESERVATION_ID = %s;", (reservation_id,))
+    
+    cursor.execute("select VEHICLE_ID from RESERVATION where RESERVATION_ID= %s;",(reservation_id,))
+    vehicle_id = cursor.fetchone()[0]
+    
+    cursor.execute("update VEHICLE set STATUS='ACTIVE' WHERE VEHICLE_ID = %s;",(vehicle_id,))
+    mydb.commit()
+    return redirect('/reservations')
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
