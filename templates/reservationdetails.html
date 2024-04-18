@@ -139,7 +139,7 @@
             
             <form action="/cancel_reservation/{{ reservation[0] }}" method="post" class="mt-3">
                 <a href="/reservations" class="btn btn-primary me-2">Back</a>
-                {% if reservation[5] != 'CANCELLED' %}
+                {% if reservation[5] != 'CANCELLED' and  reservation[5] != 'COMPLETED'%}
                     {% if reservation[5] == 'RESERVED' or is_employee_logged_in %}
                     <button type="submit" class="btn btn-danger">Cancel Reservation</button>
                     {% endif %}
@@ -151,6 +151,42 @@
                 <button type="submit" class="btn btn-success mt-3">Check in Reservation</button>
             </form>
             {% endif %}
+
+            {% if is_employee_logged_in and reservation[5] == 'IN_PROGRESS' %}
+            <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#completeReservationModal">
+                Complete Reservation
+            </button>
+            {% endif %}
+
+            <!-- Complete Reservation Modal -->
+            <div class="modal fade" id="completeReservationModal" tabindex="-1" aria-labelledby="completeReservationModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="completeReservationModalLabel">Complete Reservation</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="/complete_reservation/{{ reservation[0] }}" method="post">
+                                <div class="mb-3">
+                                    <label for="mileage" class="form-label">Mileage on Car</label>
+                                    <input type="text" class="form-control" id="mileage" name="mileage" pattern="[0-9]+" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="location" class="form-label">Location</label>
+                                    <select class="form-select" id="location" name="location" required>
+                                        <option value="1">Mount Pleasant</option>
+                                        <option value="2">Midland</option>
+                                        <option value="3">Lansing</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Complete Reservation</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
         </div>
     </div>
 

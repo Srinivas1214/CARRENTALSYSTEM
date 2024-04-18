@@ -89,8 +89,37 @@ def signup():
             mydb.commit()
             return redirect('/')
         except Exception as Argument:
-            logging.exception("Error occurred while printing GeeksforGeeks") 
+            logging.exception("Error occurred while signup") 
             return "Username already exists."
+        
+
+@app.route('/add_vehicle', methods=['GET', 'POST'])
+def add_vehicle():
+    if request.method == 'GET':
+        return render_template('add_vehicle.html')
+    elif request.method == 'POST':
+        try:
+            make = request.form['make']
+            model = request.form['model']
+            year = request.form['year']
+            type = request.form['type']
+            mileage = request.form['mileage']
+            color = request.form['color']
+            capacity = request.form['capacity']
+            transmission = request.form['transmission']
+            mpg = request.form['mpg']
+            cargroup = request.form['cargroup']
+            price = request.form['price']
+            location = request.form['location']
+
+            cursor = mydb.cursor()
+            cursor.execute("INSERT INTO VEHICLE (MAKE, MODEL, YEAR, TYPE, MILEAGE, COLOR, STATUS, CAPACITY, TRANSMISSION, MPG, CAR_GROUP, PRICE_PER_DAY, ADDRESS_LOCATED) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);",
+                           (make, model, year, type, mileage, color, 'ACTIVE', capacity, transmission, mpg, cargroup, price, location))
+            mydb.commit()
+            return render_template('veichleadded_sucessful.html')
+        except Exception as Argument:
+            logging.exception("Error occurred while adding veichle") 
+            return "Error occurred while adding veichle please check all fields"
 
 
 @app.route('/dashboard')
@@ -176,6 +205,23 @@ def reservations():
 
     else:
         return redirect('/')
+    
+@app.route('/complete_reservation/<int:reservation_id>' , methods=['POST'])
+def completeReservation(reservation_id):
+    mileage = request.form['mileage']
+    location = request.form['location']
+
+    cursor = mydb.cursor()
+    cursor.execute ("update RESERVATION set R_STATUS = 'COMPLETED' where RESERVATION_ID = %s;", (reservation_id,))
+
+    cursor.execute ("select VEHICLE_ID from RESERVATION where RESERVATION_ID = %s;",(reservation_id,))
+    vehicle_id = cursor.fetchone()[0]
+    
+    cursor.execute ("update VEHICLE set STATUS='ACTIVE', MILEAGE = %s, ADDRESS_LOCATED = %s WHERE VEHICLE_ID = %s;",(mileage, location, vehicle_id,))
+    mydb.commit()
+
+    return render_template('reservation_completed_sucessful.html')
+
 
 @app.route('/reservation/<int:reservation_id>')
 def reservation(reservation_id):
@@ -206,6 +252,7 @@ def confirm_reservation(reservation_id):
 
     cursor.execute("update RESERVATION set R_STATUS = 'IN_PROGRESS' where RESERVATION_ID = %s;",(reservation_id,))
     
+    mydb.commit()
     return render_template('checkedin_sucessful.html')
     
 @app.route('/vehicle/<int:vehicle_id>')

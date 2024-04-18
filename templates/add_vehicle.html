@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Vehicle</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h2>Add Vehicle</h2>
+        <form method="POST" action="/add_vehicle">
+            <div class="mb-3">
+                <label for="make" class="form-label">Make</label>
+                <input type="text" class="form-control" id="make" name="make" pattern="[A-Za-z]+" required>
+            </div>
+            <div class="mb-3">
+                <label for="model" class="form-label">Model</label>
+                <input type="text" class="form-control" id="model" name="model" pattern="[A-Za-z]+" required>
+            </div>
+            <div class="mb-3">
+                <label for="year" class="form-label">Year</label>
+                <input type="number" class="form-control" id="year" name="year" pattern="[0-9]+" required>
+            </div>
+            <div class="mb-3">
+                <label for="type" class="form-label">type</label>
+                <select class="form-select" id="type" name="type" required>
+                    <option value="">Select veichle type</option>
+                    <option value="SEDAN">Sedan</option>
+                    <option value="SUV">Suv</option>
+                    <option value="MINI-VAN">Mini-Van</option>
+                    <option value="CONVERTIBLE">Convertible</option>
+                    <option value="SPORT">Sport</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="mileage" class="form-label">Mileage</label>
+                <input type="text" class="form-control" id="mileage" name="mileage" pattern="[0-9]+" required>
+            </div>
+            <div class="mb-3">
+                <label for="color" class="form-label">Color</label>
+                <input type="text" class="form-control" id="color" name="color" required>
+            </div>
+            <div class="mb-3">
+                <label for="capacity" class="form-label">Fuel Capacity</label>
+                <input type="text" class="form-control" id="capacity" name="capacity" pattern="[0-9]+" required>
+            </div>
+            <div class="mb-3">
+                <label for="transmission" class="form-label">Transmission</label>
+                <select class="form-select" id="transmission" name="transmission" required>
+                    <option value="">Select transmission type</option>
+                    <option value="AUTOMATIC">Automatic</option>
+                    <option value="MANUAL">MANUAL</option>
+                    <option value="HYBRID">Hybrid</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="mpg" class="form-label">MPG</label>
+                <input type="text" class="form-control" id="mpg" name="mpg" pattern="[0-9]+" required>
+            </div>
+            <div class="mb-3">
+                <label for="cargroup" class="form-label">Car Group</label>
+                <select class="form-select" id="cargroup" name="cargroup" required>
+                    <option value="">Select cargroup type</option>
+                    <option value="ECONOMY">Economy</option>
+                    <option value="INTERMEDIATE">Intermediate</option>
+                    <option value="PREMIUM">Premium</option>
+                    <option value="LUXURY">Luxury</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="price" class="form-label">Price</label>
+                <input type="text" class="form-control" id="price" name="price" pattern="[0-9]+" required>
+            </div>
+            <div class="mb-3">
+                <label for="location" class="form-label">Location</label>
+                <select class="form-select" id="location" name="location" required>
+                    <option value="1">Mount Pleasant</option>
+                    <option value="2">Midland</option>
+                    <option value="3">Lansing</option>
+                </select>
+            </div>
+            <a href="/dashboard" class="btn btn-primary me-2">Back</a>
+            <button type="submit" class="btn btn-primary">Add Vehicle</button>
+        </form>
+    </div>
+</body>
+
+</html>

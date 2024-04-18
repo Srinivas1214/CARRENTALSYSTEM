@@ -31,14 +31,14 @@
         </div>
         <div>
             {% if is_employee_logged_in == 'true' %}
-            <a href="/addVeichle" class="btn btn-primary me-2">Add Veichles</a>
+            <a href="/add_vehicle" class="btn btn-primary me-2">Add Veichles</a>
             {% endif %}
             <a href="/reservations" class="btn btn-primary me-2">View Reservations</a> <!-- Added View Reservations button -->
             <a href="/logout" class="btn btn-danger">Sign Out</a>
         </div>
     </div>
 
-    <div class="w-100 mx-auto mt-3 bg-light px-3 py-2 rounded-3">
+    <div class="w-100 mx-auto mt-2 bg-light px-3 py-2 rounded-3">
         <form action="/dashboard" method="GET">
             <div class="mb-3">
                 <label for="location" class="form-label">Select Location</label>
