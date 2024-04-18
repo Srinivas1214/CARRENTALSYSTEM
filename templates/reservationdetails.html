@@ -143,6 +143,12 @@
                 <button type="submit" class="btn btn-danger">Cancel Reservation</button>
                 {% endif %}
             </form>
+
+            {% if is_employee_logged_in %}
+            <form action="/confirm_reservation/{{ reservation[0] }}" method="post">
+                <button type="submit" class="btn btn-success mt-3">Check in Reservation</button>
+            </form>
+            {% endif %}
         </div>
     </div>
 

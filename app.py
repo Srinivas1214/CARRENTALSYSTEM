@@ -5,7 +5,7 @@ import logging
 
 
 app = Flask(__name__)
-app.secret_key = "your_secret_key"
+app.secret_key = "your_secret_key1"
 
 # MySQL Configuration
 mydb = mysql.connector.connect(
@@ -25,8 +25,15 @@ def login():
     password = request.form['password']
 
     cursor = mydb.cursor()
-    cursor.execute("SELECT USERNAME FROM LOGIN_INFO WHERE USERNAME=%s AND PASSWORD=%s", (username, password))
+    cursor.execute("SELECT USERNAME, USER_ID FROM LOGIN_INFO WHERE USERNAME=%s AND PASSWORD=%s", (username, password))
     user = cursor.fetchone()
+
+    cursor.execute("select EMPLOYEE_ID from EMPLOYEE where EMPLOYEE_ID =%s;",(user[1],))
+    emp = cursor.fetchone()
+
+    if emp:
+        session['emp'] = emp[0]
+        return redirect('/reservations')
 
     if user:
         session['username'] = user[0]
@@ -39,6 +46,8 @@ def login():
 def logout():
     # Clear the session data
     session.pop('username', None)
+    session.pop('emp', None)
+    session.clear()
     # Redirect to the login page
     return redirect('/')
     
@@ -86,11 +95,9 @@ def signup():
 
 @app.route('/dashboard')
 def dashboard():
-    if 'username' not in session:
-        return redirect('/')
-    
+
     cursor = mydb.cursor()
-    if 'username' in session:
+    if 'username' or 'emp' in session:
         page = request.args.get('page', 1, type=int)
         location = request.args.get('location')
         per_page = 10
@@ -124,6 +131,23 @@ def dashboard():
 @app.route('/reservations')
 def reservations():
     cursor = mydb.cursor()
+
+    if 'emp' in session:
+        page = request.args.get('page', 1, type=int)
+        per_page = 10
+        offset = (page - 1) * per_page
+
+        cursor.execute("SELECT * FROM RESERVATION LIMIT %s OFFSET %s", (per_page, offset))
+        reservations = cursor.fetchall()
+
+        cursor.execute("SELECT COUNT(*) FROM RESERVATION")
+        total_records = cursor.fetchone()[0]
+        has_next = (offset + per_page) < total_records
+        has_prev = page > 1
+
+        return render_template('reservations.html', reservations=reservations, page=page, per_page=per_page, has_next=has_next, has_prev=has_prev)
+        
+
     if 'username' in session:
         page = request.args.get('page', 1, type=int)
         per_page = 10
@@ -138,7 +162,7 @@ def reservations():
         reservations = cursor.fetchall()
 
         # Check if there are more results
-        cursor.execute("SELECT COUNT(*) FROM RESERVATION")
+        cursor.execute("SELECT COUNT(*) FROM RESERVATION where CUSTOMER_ID= %s",(customer_id,))
         total_records = cursor.fetchone()[0]
         has_next = (offset + per_page) < total_records
         has_prev = page > 1
@@ -155,10 +179,30 @@ def reservation(reservation_id):
     cursor = mydb.cursor()
     cursor.execute("select R.RESERVATION_ID, CONCAT(C.FIRST_NAME,' ',C.LAST_NAME) AS Name, V.MAKE, V.MODEL, V.YEAR ,R.R_STATUS ,R.PICKUP_LOCATION, R.PICKUP_DATE, R.DROP_LOCATION, R.DROP_DATE, R.PAYMENT_AMOUNT, R.PAYMENT_METHOD from RESERVATION AS R JOIN CUSTOMER C on C.CUSTOMER_ID = R.CUSTOMER_ID JOIN VEHICLE V on R.VEHICLE_ID = V.VEHICLE_ID WHERE R.RESERVATION_ID = %s;", (reservation_id,))
     reservation_details = cursor.fetchone()
+
+    if 'emp' in session:
+        if reservation_details:
+            return render_template('reservationdetails.html', reservation=reservation_details, is_employee_logged_in='true')
+        else:
+            return "Vehicle not found"
+
     if reservation_details:
         return render_template('reservationdetails.html', reservation=reservation_details)
     else:
         return "Vehicle not found"
+    
+@app.route('/confirm_reservation/<int:reservation_id>', methods=['POST'])
+def confirm_reservation(reservation_id):
+    cursor = mydb.cursor()
+
+    cursor.execute("select VEHICLE_ID from RESERVATION where RESERVATION_ID= %s;",(reservation_id,))
+    vehicle_id = cursor.fetchone()[0]
+
+    cursor.execute("update VEHICLE set STATUS='IN-RESERVATION' WHERE VEHICLE_ID = %s;", (vehicle_id,))
+
+    cursor.execute("update RESERVATION set R_STATUS = 'IN_PROGRESS' where RESERVATION_ID = %s;",(reservation_id,))
+    
+    return render_template('checkedin_sucessful.html')
     
 @app.route('/vehicle/<int:vehicle_id>')
 def vehicle(vehicle_id):
@@ -216,8 +260,6 @@ def make_reservation(vehicle_id):
         return render_template('make_reservation.html', vehicle=vehicle_details)
     else:
         return "Vehicle not found"
-    
-
 
 @app.route('/cancel_reservation/<int:reservation_id>', methods=['POST'])
 def cancel_reservation(reservation_id):
@@ -229,7 +271,7 @@ def cancel_reservation(reservation_id):
     
     cursor.execute("update VEHICLE set STATUS='ACTIVE' WHERE VEHICLE_ID = %s;",(vehicle_id,))
     mydb.commit()
-    return redirect('/reservations')
+    return render_template('cancel_sucessful.html')
 
 
 
