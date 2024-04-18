@@ -27,9 +27,12 @@
 <body>
     <div class="header-bar">
         <div class="logo">
-            <img src="path/to/your/logo.png" alt="Logo">
+            <img src="logo" alt="Group 5">
         </div>
         <div>
+            {% if is_employee_logged_in == 'true' %}
+            <a href="/addVeichle" class="btn btn-primary me-2">Add Veichles</a>
+            {% endif %}
             <a href="/reservations" class="btn btn-primary me-2">View Reservations</a> <!-- Added View Reservations button -->
             <a href="/logout" class="btn btn-danger">Sign Out</a>
         </div>
@@ -88,6 +91,13 @@
                             </td>
                             <!-- Add more columns as per your vehicle details -->
                             <td><a href="/vehicle/{{ vehicle[0] }}">View Details</a></td>
+                            {% if is_employee_logged_in == 'true' %}
+                            <td>
+                                <form action="/remove_vehicle/{{ vehicle[0] }}" method="post">
+                                    <button type="submit" class="btn btn-danger">Remove</button>
+                                </form>
+                            </td>
+                            {% endif %}
                         </tr>
                         {% endfor %}
                     </tbody>

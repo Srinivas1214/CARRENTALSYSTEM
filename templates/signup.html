@@ -32,8 +32,9 @@
                             required>
                     </div>
                     <div class="col">
-                        <input type="date" name="dob" placeholder="Date of Birth" class="form-control my-2 rounded" required>
+                        <input type="date" name="dob" class="form-control my-2 rounded" required onfocus="this.placeholder = ''" onblur="this.placeholder = 'Date of Birth'" placeholder="Date of Birth">
                     </div>
+                    
                     <div class="col">
                         <select name="gender" class="form-select my-2 rounded" required>
                             <option value="" selected disabled>Select Gender</option>

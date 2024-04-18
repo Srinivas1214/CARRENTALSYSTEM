@@ -102,6 +102,10 @@ def dashboard():
         location = request.args.get('location')
         per_page = 10
         offset = (page - 1) * per_page
+        is_employee_logged_in='false'
+
+        if 'emp' in session:
+            is_employee_logged_in = 'true'
 
         if location:
             location = int(location)
@@ -124,7 +128,7 @@ def dashboard():
             has_next = (offset + per_page) < total_records
             has_prev = page > 1
 
-        return render_template('dashboard.html', vehicles=vehicles, page=page, per_page=per_page, has_next=has_next, has_prev=has_prev)
+        return render_template('dashboard.html', vehicles=vehicles, page=page, per_page=per_page, has_next=has_next, has_prev=has_prev, is_employee_logged_in=is_employee_logged_in)
     else:
         return redirect('/')
     
@@ -137,7 +141,7 @@ def reservations():
         per_page = 10
         offset = (page - 1) * per_page
 
-        cursor.execute("SELECT * FROM RESERVATION LIMIT %s OFFSET %s", (per_page, offset))
+        cursor.execute("SELECT * FROM RESERVATION order by UPDATED_AT DESC LIMIT %s OFFSET %s", (per_page, offset))
         reservations = cursor.fetchall()
 
         cursor.execute("SELECT COUNT(*) FROM RESERVATION")
@@ -158,7 +162,7 @@ def reservations():
         cursor.execute("select USER_ID from LOGIN_INFO where USERNAME = %s;",(session['username'],))
         customer_id = cursor.fetchone()[0]
 
-        cursor.execute("SELECT * FROM RESERVATION where CUSTOMER_ID= %s LIMIT %s OFFSET %s", (customer_id ,per_page, offset))
+        cursor.execute("SELECT * FROM RESERVATION where CUSTOMER_ID= %s  order by UPDATED_AT DESC LIMIT %s OFFSET %s", (customer_id ,per_page, offset))
         reservations = cursor.fetchall()
 
         # Check if there are more results
@@ -214,6 +218,13 @@ def vehicle(vehicle_id):
         return render_template('vehicle.html', vehicle=vehicle_details)
     else:
         return "Vehicle not found"
+
+@app.route('/remove_vehicle/<int:vehicle_id>', methods=['POST'])
+def remove_vehicle(vehicle_id):
+    cursor = mydb.cursor()
+    cursor.execute("update VEHICLE set STATUS='INACTIVE' WHERE VEHICLE_ID = %s", (vehicle_id,))
+    mydb.commit()
+    return render_template('vehicle_removed_successfully.html')
     
 @app.route('/register')
 def register():
