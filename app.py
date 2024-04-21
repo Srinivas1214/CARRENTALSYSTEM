@@ -78,6 +78,12 @@ def signup():
         password = request.form['password']
         try:
             cursor = mydb.cursor()
+            cursor.execute("SELECT * FROM LOGIN_INFO WHERE USERNAME="+ "'"+ username + "'")
+            user = cursor.fetchone()
+            if not user or user[0] == 0:
+                return render_template('user_created_sucessful.html', username = username)
+
+
             cursor.execute("insert into LOGIN_INFO (USERNAME, PASSWORD) values (%s, %s);",(username, password))
 
             cursor.execute("SELECT * FROM LOGIN_INFO WHERE USERNAME="+ "'"+ username + "'")
