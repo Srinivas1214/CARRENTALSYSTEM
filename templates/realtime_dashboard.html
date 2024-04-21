@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Time Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+          crossorigin="anonymous">
+    <style>
+        .header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: #f8f9fa; /* Change this color as needed */
+            border-bottom: 1px solid #dee2e6; /* Change this color as needed */
+        }
+    
+        .logo {
+            max-width: 150px; /* Adjust the logo width as needed */
+        }
+    </style>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .card-title {
+            color: #333;
+        }
+
+        .card-text {
+            color: #000000;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* Colors for the cards */
+        .reservation-card {
+            background-color: #ff6b6b; /* Red */
+        }
+
+        .vehicle-card {
+            background-color: #45aaf2; /* Blue */
+        }
+
+        .location-card {
+            background-color: #20bf6b; /* Green */
+        }
+
+        .customer-card {
+            background-color: #f7b731; /* Yellow */
+        }
+    </style>
+</head>
+<body>
+    <div class="header-bar">
+        <div class="logo">
+            <img src="path/to/your/logo.png" alt="Logo">
+        </div>
+        <div>
+            <a href="/reservations" class="btn btn-primary me-2">Back</a>
+            <a href="/logout" class="btn btn-danger">Sign Out</a>
+        </div>
+    </div>
+<div class="container">
+    <h1 class="text-center mb-5">Dashboard</h1>
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card reservation-card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Reservations</h5>
+                    <p class="card-text" style="font-size: 36px;">{{ total_reservations }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card vehicle-card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Vehicles</h5>
+                    <p class="card-text" style="font-size: 36px;">{{ total_vehicles }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card location-card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Locations</h5>
+                    <p class="card-text" style="font-size: 36px;">{{ total_locations }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card customer-card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Customers</h5>
+                    <p class="card-text" style="font-size: 36px;">{{ total_customers }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+</body>
+</html>

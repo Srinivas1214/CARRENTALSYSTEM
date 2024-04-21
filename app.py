@@ -164,11 +164,13 @@ def dashboard():
 @app.route('/reservations')
 def reservations():
     cursor = mydb.cursor()
+    is_employee_logged_in='false'
 
     if 'emp' in session:
         page = request.args.get('page', 1, type=int)
         per_page = 10
         offset = (page - 1) * per_page
+        is_employee_logged_in = 'true'
 
         cursor.execute("SELECT * FROM RESERVATION order by UPDATED_AT DESC LIMIT %s OFFSET %s", (per_page, offset))
         reservations = cursor.fetchall()
@@ -178,7 +180,7 @@ def reservations():
         has_next = (offset + per_page) < total_records
         has_prev = page > 1
 
-        return render_template('reservations.html', reservations=reservations, page=page, per_page=per_page, has_next=has_next, has_prev=has_prev)
+        return render_template('reservations.html', reservations=reservations, page=page, per_page=per_page, has_next=has_next, has_prev=has_prev, is_employee_logged_in=is_employee_logged_in)
         
 
     if 'username' in session:
@@ -369,6 +371,30 @@ def export_reservations():
         mimetype="text/csv",
         headers={"Content-Disposition": "attachment;filename=reservations.csv"}
     )
+
+@app.route('/realtime_dashboard')
+def realtime_dashboard():
+    cursor = mydb.cursor()
+
+    # Query to get total reservations
+    cursor.execute("SELECT COUNT(*) FROM RESERVATION")
+    total_reservations = cursor.fetchone()[0]
+
+    # Query to get total vehicles
+    cursor.execute("SELECT COUNT(*) FROM VEHICLE")
+    total_vehicles = cursor.fetchone()[0]
+
+    # Query to get total locations available
+    cursor.execute("SELECT COUNT(*) FROM RENTAL_LOCATION")
+    total_locations = cursor.fetchone()[0]
+
+    # Query to get total customers available
+    cursor.execute("SELECT COUNT(*) FROM CUSTOMER")
+    total_customers = cursor.fetchone()[0]
+
+    return render_template('realtime_dashboard.html', total_reservations=total_reservations,
+                           total_vehicles=total_vehicles, total_locations=total_locations,
+                           total_customers=total_customers)
 
 
 if __name__ == '__main__':

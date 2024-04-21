@@ -29,6 +29,10 @@
             <img src="path/to/your/logo.png" alt="Logo">
         </div>
         <div>
+            {% if is_employee_logged_in == 'true' %}
+            <a href="/realtime_dashboard" class="btn btn-info ms-2">Real Time Dashboard</a>
+            <a href="/export_reservations" class="btn btn-success me-2">Export Reservations</a>
+            {% endif %}
             <a href="/dashboard" class="btn btn-primary me-2">View Veichles</a>
             <a href="/logout" class="btn btn-danger">Sign Out</a>
         </div>
