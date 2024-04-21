@@ -1,7 +1,9 @@
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, session, Response
 import mysql.connector
 from datetime import datetime
 import logging
+import csv
+import io
 
 
 app = Flask(__name__)
@@ -85,7 +87,7 @@ def signup():
                            (cus_id[0], firstname, lastname, dob, gender, phonenumber, email, licNumber, licExpDate, address1, address2, city, state, zipcode))
 
             mydb.commit()
-            return render_template('user_created_sucessful.html')
+            return render_template('user_created_sucessful.html', username = username)
         except Exception as Argument:
             logging.exception("Error occurred while signup") 
             return "Error occurred while signup please signup again"
@@ -329,6 +331,44 @@ def cancel_reservation(reservation_id):
     mydb.commit()
     return render_template('cancel_sucessful.html')
 
+@app.route('/export_vehicles')
+def export_vehicles():
+    cursor = mydb.cursor()
+
+    cursor.execute("SELECT MAKE, MODEL, YEAR, TYPE, MILEAGE ,COLOR, MPG, TRANSMISSION, CAR_GROUP, CAPACITY, RL.LOCATION_NAME FROM VEHICLE join RENTAL_LOCATION RL on RL.RENTAL_LOCATION_ID = VEHICLE.ADDRESS_LOCATED;")
+    vehicles = cursor.fetchall()
+
+    # Generate CSV file
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['Make', 'Model', 'Year', 'Type', 'Mileage' ,'Color', 'Mpg', 'Transmission', 'Car Group', 'Capasity' ,'Location'])
+    writer.writerows(vehicles)
+
+    # Return CSV file as response
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment;filename=vehicles.csv"}
+    )
+
+@app.route('/export_reservations')
+def export_reservations():
+    cursor = mydb.cursor()
+
+    cursor.execute("SELECT RESERVATION_ID, C.FIRST_NAME, C.LAST_NAME, V.MAKE, V.MODEL, RESERVATION.CREATED_AT ,PICKUP_DATE, DROP_DATE, PAYMENT_AMOUNT, PAYMENT_METHOD FROM RESERVATION JOIN CUSTOMER C on C.CUSTOMER_ID = RESERVATION.CUSTOMER_ID JOIN VEHICLE V on RESERVATION.VEHICLE_ID = V.VEHICLE_ID;")
+    reservations = cursor.fetchall()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['Reservation Id', 'Customer First Name','Customer Last Name', 'Make', 'Model', 'Reservation Date', 'Pickup Date', 'Drop Date', 'Price', 'Payment Method'])
+    writer.writerows(reservations)
+    
+    # Return CSV file as response
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment;filename=reservations.csv"}
+    )
 
 
 if __name__ == '__main__':

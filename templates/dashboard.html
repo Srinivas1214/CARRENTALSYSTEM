@@ -32,6 +32,8 @@
         <div>
             {% if is_employee_logged_in == 'true' %}
             <a href="/add_vehicle" class="btn btn-primary me-2">Add Veichles</a>
+            <a href="/export_vehicles" class="btn btn-success me-2">Export Vehicles</a>
+            <a href="/export_reservations" class="btn btn-success me-2">Export Reservations</a>
             {% endif %}
             <a href="/reservations" class="btn btn-primary me-2">View Reservations</a> <!-- Added View Reservations button -->
             <a href="/logout" class="btn btn-danger">Sign Out</a>
