@@ -77,9 +77,7 @@ def signup():
         try:
             cursor = mydb.cursor()
             cursor.execute("insert into LOGIN_INFO (USERNAME, PASSWORD) values (%s, %s);",(username, password))
-            mydb.commit()
 
-            cursor = mydb.cursor()
             cursor.execute("SELECT * FROM LOGIN_INFO WHERE USERNAME="+ "'"+ username + "'")
             cus_id = cursor.fetchone()
            
@@ -87,10 +85,10 @@ def signup():
                            (cus_id[0], firstname, lastname, dob, gender, phonenumber, email, licNumber, licExpDate, address1, address2, city, state, zipcode))
 
             mydb.commit()
-            return redirect('/')
+            return render_template('user_created_sucessful.html')
         except Exception as Argument:
             logging.exception("Error occurred while signup") 
-            return "Username already exists."
+            return "Error occurred while signup please signup again"
         
 
 @app.route('/add_vehicle', methods=['GET', 'POST'])
